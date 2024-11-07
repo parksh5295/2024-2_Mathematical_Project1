@@ -7,6 +7,7 @@ from Crypto.PublicKey import RSA
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
 import argparse
+import math
 
 BLOCK_SIZE = 32
 
@@ -29,10 +30,17 @@ def is_prime(n):
     return True
 
 def rsa_keygen(p, q):
-    """Generate RSA public/private key pair."""
+    """Generate RSA public/private key pair with a random coprime for e."""
     n = p * q
     phi_n = (p - 1) * (q - 1)
-    e = 65537  # Common choice for e
+
+    # Choose e randomly such that 1 < e < phi_n and gcd(e, phi_n) == 1
+    while True:
+        e = random.randint(2, phi_n - 1)
+        if math.gcd(e, phi_n) == 1:
+            break
+
+    # Calculate d, the modular inverse of e modulo phi_n
     d = mod_inverse(e, phi_n)
     return (n, e), (n, d)
 
