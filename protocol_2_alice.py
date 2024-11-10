@@ -98,7 +98,7 @@ def run(addr, port):
     }
     sjs = json.dumps(smsg)
     conn.send(sjs.encode("ascii"))
-    logging.info("[*] Sent public key: {}".format(smsg))
+    logging.info("[*] Sent Message: {}".format(smsg))
     
     # Receive Bob's public key
     rbytes = conn.recv(1024)
