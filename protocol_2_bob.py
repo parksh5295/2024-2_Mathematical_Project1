@@ -102,7 +102,7 @@ def handler(conn):
         }
         sjs = json.dumps(smsg)
         conn.send(sjs.encode("ascii"))
-        logging.info("[*] Sent RSA public key to Alice")
+        logging.info("[*] Request RSA keypair to Alice")
 
         # Receive RSA encrypted symmetric key from Alice
         rbytes = conn.recv(2048)
@@ -121,6 +121,7 @@ def handler(conn):
         rbytes = conn.recv(1024)
         rmsg = json.loads(rbytes.decode("ascii"))
         encrypted_msg = base64.b64decode(rmsg["encryption"])
+        logging.info("[*] Receive AES encrypted message from Alice: {}".format(rmsg))
 
         # Decrypt the message using AES
         msg = decrypt_aes(aes_key, encrypted_msg)
