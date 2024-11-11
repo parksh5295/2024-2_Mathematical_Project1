@@ -8,6 +8,7 @@ from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
 import argparse
 import math
+from Crypto.Util.Padding import unpad
 
 BLOCK_SIZE = 32
 
@@ -104,6 +105,7 @@ def run(addr, port):
     rbytes = conn.recv(1024)
     rmsg = json.loads(rbytes.decode("ascii"))
     logging.info(f"[*] Received Bob's public key: {rmsg}")
+    # print(f"value of n: {rmsg['parameter']['n']}")
 
     # Generate and encrypt AES key
     aes_key = get_random_bytes(32)  # AES key is 32 bytes (256 bits)
@@ -111,7 +113,7 @@ def run(addr, port):
     encrypted_aes_key = rsa_encrypt((rmsg["parameter"]["n"], rmsg["public"]), aes_key)
 
     smsg = {
-        "opcode": 1,
+        "opcode": 2,
         "type": "RSA",
         "encrypted_key": encrypted_aes_key  # <-- encrypted_key로 보내야 함
     }
@@ -119,9 +121,18 @@ def run(addr, port):
     conn.send(sjs.encode("ascii"))
     logging.info(f"[*] Sent encrypted AES key to Bob: {encrypted_aes_key}")
 
-    
+    rbytes2 = conn.recv(1024)
+    logging.info(f"Received raw data: {rbytes2}")
+    rmsg2 = json.loads(rbytes2.decode('ascii'))
+    encrypted_msg_base64 = rmsg2["encryption"]
+    encrypted_msg_2 = base64.b64decode(encrypted_msg_base64)
+    logging.info(f"Encrypted message from bob: {encrypted_msg_2}")
+
+    msg = decrypt_aes(aes_key, encrypted_msg_2)
+    logging.info("[*] Decrypted message: {}".format(msg))
+
     # Send encrypted message using AES
-    msg = "secret message"
+    msg = "World"
     encrypted_msg = encrypt_aes(aes_key, msg)
     smsg = {
         "opcode": 2,

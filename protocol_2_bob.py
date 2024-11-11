@@ -83,15 +83,15 @@ def decrypt_aes(key, encrypted):
 
 def handler(conn):
     try:
-        # Generate RSA key pair for Bob
+        # Resived 
+        rbytes = conn.recv(1024)
+        rmsg = json.loads(rbytes.decode("ascii"))
+        print(rmsg)
+        
+        # Generate RSA key pair for Alice
         p, q = generate_prime_pair()
         public_key, private_key = rsa_keygen(p, q)
         n, e = public_key
-
-        # Resived 
-        rbytes = conn.recv(2048)
-        rmsg = json.loads(rbytes.decode("ascii"))
-        print(rmsg)
 
         # Send RSA public key to Alice
         smsg = {
@@ -102,10 +102,10 @@ def handler(conn):
         }
         sjs = json.dumps(smsg)
         conn.send(sjs.encode("ascii"))
-        logging.info("[*] Request RSA keypair to Alice")
+        logging.info("[*] Response RSA keypair to Alice")
 
         # Receive RSA encrypted symmetric key from Alice
-        rbytes = conn.recv(2048)
+        rbytes = conn.recv(1024)
         rmsg = json.loads(rbytes.decode("ascii"))
         print(rmsg)
         encrypted_key = rmsg.get("encrypted_key")
@@ -117,18 +117,8 @@ def handler(conn):
         aes_key = rsa_decrypt(private_key, encrypted_key)
         logging.info("[*] Decrypted AES key: {}".format(len(aes_key)))
 
-        # Receive AES encrypted message from Alice
-        rbytes = conn.recv(1024)
-        rmsg = json.loads(rbytes.decode("ascii"))
-        encrypted_msg = base64.b64decode(rmsg["encryption"])
-        logging.info("[*] Receive AES encrypted message from Alice: {}".format(rmsg))
-
-        # Decrypt the message using AES
-        msg = decrypt_aes(aes_key, encrypted_msg)
-        logging.info("[*] Decrypted message: {}".format(msg))
-
         # Encrypt a new message using AES
-        new_msg = "world"
+        new_msg = "Hello"
         encrypted_new_msg = encrypt_aes(aes_key, new_msg)
         smsg = {
             "opcode": 2,
@@ -138,6 +128,15 @@ def handler(conn):
         sjs = json.dumps(smsg)
         conn.send(sjs.encode("ascii"))
         logging.info("[*] Sent AES encrypted message to Alice")
+
+        # Receive AES encrypted message from Alice
+        rbytes = conn.recv(1024)
+        rmsg = json.loads(rbytes.decode("ascii"))
+        encrypted_msg = base64.b64decode(rmsg["encryption"])
+        logging.info("[*] Receive AES encrypted message from Alice: {}".format(rmsg))
+        # Decrypt the message using AES
+        msg = decrypt_aes(aes_key, encrypted_msg)
+        logging.info("[*] Decrypted message: {}".format(msg))
 
     except Exception as e:
         logging.error(f"Error in handler: {e}")
