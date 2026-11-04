@@ -36,7 +36,7 @@ def factorize(n):
 
 # g가 p에 대한 원시근인지 확인하는 함수
 def is_valid_generator(g, p):
-    # p-1의 소인수 목록을 구합니다.
+    # p-1의 소인수 목록을 구함
     factors = factorize(p - 1)
 
     # 모든 소인수 q에 대해 g^((p-1)/q) % p != 1 확인
@@ -189,7 +189,7 @@ def handler(conn, error, msg):
         # 5. 공유 비밀키 계산 (밥의 비밀키와 앨리스의 공개키 사용)
         shared_secret = pow(alice_public_key, bob_private_key, p)
 
-        # ✔️ 공유 비밀키를 2바이트로 변환하고 32바이트 AES 키로 확장
+        # 공유 비밀키를 2바이트로 변환하고 32바이트 AES 키로 확장
         dh_shared_bytes = shared_secret.to_bytes(2, "big")
         aes_key = dh_shared_bytes * 16  # 2바이트를 16번 반복하여 32바이트로 채움
 
