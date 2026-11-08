@@ -57,9 +57,13 @@ def mod_inverse(a, m):
     return x1 + m0 if x1 < 0 else x1
 
 def rsa_encrypt(public_key, message):
-    """Encrypt each letter of the message using RSA."""
+    """Encrypt each byte of the message using RSA."""
     n, e = public_key
-    encrypted_msg = [pow(char, e, n) for char in message]
+    encrypted_msg = []
+    for i in range(len(message)):
+        byte_val = message[i]
+        encrypted = pow(byte_val, e, n)
+        encrypted_msg.append(encrypted)
     return encrypted_msg
 
 def rsa_decrypt(private_key, encrypted_msg):
